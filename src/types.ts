@@ -37,7 +37,7 @@ export interface CartItem extends Product {
 export interface Review {
   id: string;
   productId: string;
-  userId: string | number; // Some mock users might have number IDs
+  userId: string | number;
   userName: string;
   userImage?: string;
   rating: number;
@@ -66,6 +66,8 @@ export interface Conversation {
 
 export interface OrderItem {
   id: string;
+  productId?: string;
+  vendorId?: string;
   name: string;
   price: number;
   quantity: number;
@@ -127,7 +129,7 @@ export interface ShopContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
-  addOrder: (items: CartItem[], total: number, deliveryMethod: 'pickup' | 'delivery', address?: string) => void;
+  addOrder: (items: CartItem[], total: number, deliveryMethod: 'pickup' | 'delivery', address?: string) => Promise<void>;
   sendMessage: (vendorId: string, text: string) => void;
   addReview: (productId: string, rating: number, comment: string) => void;
   toggleWishlist: (productId: string) => void;
@@ -141,6 +143,8 @@ export interface ShopContextType {
   updateUserAvatar: (url: string) => void;
   topUpWallet: (amount: number) => void;
   deductFromWallet: (amount: number) => boolean;
-  addProduct: (product: Product) => void;
+  addProduct: (product: Product) => Promise<void>;
+  deleteProduct: (productId: string) => Promise<void>;
+  updateProduct: (productId: string, updates: Partial<Product>) => Promise<void>;
   updateUserName: (newName: string) => void;
 }

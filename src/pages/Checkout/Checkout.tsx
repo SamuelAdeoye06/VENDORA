@@ -28,11 +28,15 @@ export default function Checkout() {
     publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
   };
 
-  const onPaystackSuccess = (reference: any) => {
+  const onPaystackSuccess = async (reference: any) => {
     console.log('Payment successful:', reference);
-    addOrder(cart, finalTotal, deliveryMethod, address);
-    clearCart();
-    navigate('/checkout/success', { replace: true });
+    try {
+      await addOrder(cart, finalTotal, deliveryMethod, address);
+      clearCart();
+      navigate('/checkout/success', { replace: true });
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Payment succeeded, but we could not save the order. Please contact support.');
+    }
   };
 
   const onPaystackClose = () => {
@@ -44,7 +48,7 @@ export default function Checkout() {
   // Guard — hooks must be above this
   if (!user) return null;
 
-  const handlePayment = (e: FormEvent) => {
+  const handlePayment = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -64,9 +68,13 @@ export default function Checkout() {
       }
       const success = deductFromWallet(finalTotal);
       if (success) {
-        addOrder(cart, finalTotal, deliveryMethod, address);
-        clearCart();
-        navigate('/checkout/success', { replace: true });
+        try {
+          await addOrder(cart, finalTotal, deliveryMethod, address);
+          clearCart();
+          navigate('/checkout/success', { replace: true });
+        } catch (err: any) {
+          setErrorMsg(err.message || 'Wallet payment succeeded, but we could not save the order. Please contact support.');
+        }
       } else {
         setErrorMsg('Wallet payment failed. Please try again.');
       }

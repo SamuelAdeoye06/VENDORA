@@ -9,6 +9,14 @@ interface HeaderProps {
   title: string; showBack?: boolean; onBack?: () => void; rightElement?: ReactNode;
 }
 
+interface NavLink {
+  id: string;
+  icon: typeof Home;
+  label: string;
+  path: string;
+  badge?: number;
+}
+
 export default function Header({ title, showBack = false, onBack, rightElement }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,14 +28,14 @@ export default function Header({ title, showBack = false, onBack, rightElement }
 
   const isVendorSelling = user?.role === 'vendor' && viewMode === 'selling';
 
-  const buyingLinks = [
+  const buyingLinks: NavLink[] = [
     { id: 'home',    icon: Home,         label: 'Home',       path: '/' },
     { id: 'search',  icon: LayoutGrid,   label: 'Categories', path: '/search' },
     { id: 'cart',    icon: ShoppingCart, label: 'Cart',       path: '/cart', badge: cartItemCount },
     { id: 'profile', icon: UserIcon,     label: 'Account',    path: '/profile' },
   ];
 
-  const sellingLinks = [
+  const sellingLinks: NavLink[] = [
     { id: 'dashboard',   icon: LayoutGrid,   label: 'Dashboard',  path: '/vendor-dashboard' },
     { id: 'add-product', icon: ShoppingCart, label: 'Add Product',path: '/add-product' },
     { id: 'orders',      icon: Bell,         label: 'My Sales',   path: '/orders' },

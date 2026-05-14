@@ -24,7 +24,7 @@ export default function CheckoutSuccess() {
         </p>
         
         <div className="action-buttons">
-          <Button fullWidth onClick={() => navigate('/profile')} variant="primary">
+          <Button fullWidth onClick={() => navigate('/orders')} variant="primary">
             Track Order
           </Button>
           <Button fullWidth onClick={() => setIsRatingOpen(true)} variant="outline" className="mt-2">

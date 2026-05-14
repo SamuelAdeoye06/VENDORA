@@ -9,7 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import './Orders.css';
 
 export default function Orders() {
-  const { orders, addReview, getProductsByVendor } = useShop();
+  const { orders, addReview } = useShop();
   const { user, viewMode } = useAuth();
   const navigate = useNavigate();
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
@@ -32,9 +32,7 @@ export default function Orders() {
   const displayOrders = viewMode === 'buying' 
     ? orders // All orders placed by the user
     : orders.filter(order => {
-        // Only orders that contain products owned by this vendor
-        const vendorProducts = getProductsByVendor(user?.id.toString() || '');
-        return order.items.some(item => vendorProducts.some(vp => vp.id === item.id));
+        return order.items.some(item => item.vendorId === user?.id.toString());
       });
 
   return (

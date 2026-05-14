@@ -1,0 +1,44 @@
+.feedback-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-2) var(--spacing-1);
+}
+
+.feedback-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feedback-content p {
+  color: var(--color-text-main);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  max-width: 32ch;
+}
+
+.feedback-success .feedback-icon {
+  color: var(--color-success);
+  background: rgba(var(--color-success-rgb), 0.12);
+}
+
+.feedback-error .feedback-icon {
+  color: var(--color-danger);
+  background: rgba(var(--color-danger-rgb), 0.12);
+}
+
+.feedback-warning .feedback-icon {
+  color: var(--color-secondary);
+  background: rgba(255, 153, 51, 0.14);
+}
+
+.feedback-info .feedback-icon {
+  color: #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+}

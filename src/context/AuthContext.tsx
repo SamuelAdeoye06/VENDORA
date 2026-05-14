@@ -92,38 +92,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
-  useEffect(() => {
-    if (!session) return;
-
-    const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
-    let timeoutId: NodeJS.Timeout;
-
-    const resetTimer = () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        console.log('Session expired due to inactivity');
-        signOut();
-      }, THREE_HOURS_MS);
-    };
-
-    // Events that signify user activity
-    const activityEvents = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
-    
-    activityEvents.forEach(event => {
-      window.addEventListener(event, resetTimer);
-    });
-
-    // Initial start
-    resetTimer();
-
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      activityEvents.forEach(event => {
-        window.removeEventListener(event, resetTimer);
-      });
-    };
-  }, [session]);
-
   return (
     <AuthContext.Provider value={{ 
       session, 

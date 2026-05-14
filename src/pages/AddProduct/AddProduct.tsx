@@ -83,8 +83,8 @@ export default function AddProduct() {
       const imageUrl = imageFile ? await uploadImage(imageFile) : (imagePreview as string);
 
       await addProduct({
-        id: `PROD-${Date.now()}`,
-        vendorId: user.id.toString(),
+        id: '',                    // Supabase generates the real uuid
+        vendorId: user.id.toString(), // auth uuid
         vendorName: user.name,
         name: formData.name,
         price: parseFloat(formData.price),

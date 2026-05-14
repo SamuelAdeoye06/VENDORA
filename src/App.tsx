@@ -5,7 +5,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header/Header';
 import BottomNav from './components/BottomNav/BottomNav';
 
-// Pages
 import Home from './pages/Home/Home';
 import Category from './pages/Category/Category';
 import ProductDetails from './pages/ProductDetails/ProductDetails';
@@ -28,14 +27,10 @@ import './App.css';
 
 function App() {
   const { user } = useAuth();
-
   return (
     <div className="app-container">
       <Routes>
-        {/* Auth Page - No Layout */}
         <Route path="/auth" element={<Auth />} />
-        
-        {/* Main App - With Layout */}
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<Home />} />
           <Route path="search" element={<Category />} />
@@ -51,16 +46,9 @@ function App() {
           <Route path="recently-viewed" element={<RecentlyViewed />} />
           <Route path="recently-searched" element={<RecentlySearched />} />
           <Route path="payment-settings" element={<PaymentSettings />} />
-          
-          {/* Vendor Only Routes */}
-          <Route 
-            path="vendor-dashboard" 
-            element={user?.role === 'vendor' ? <VendorDashboard /> : <Navigate to="/" replace />} 
-          />
-          <Route 
-            path="add-product" 
-            element={user?.role === 'vendor' ? <AddProduct /> : <Navigate to="/" replace />} 
-          />
+          {/* Vendor-only routes */}
+          <Route path="vendor-dashboard" element={user?.role === 'vendor' ? <VendorDashboard /> : <Navigate to="/" replace />} />
+          <Route path="add-product" element={user?.role === 'vendor' ? <AddProduct /> : <Navigate to="/" replace />} />
         </Route>
       </Routes>
     </div>
@@ -71,12 +59,10 @@ function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { viewMode, user } = useAuth();
-  const hideShell = ['/auth'].includes(location.pathname);
-  
-  // Only vendors who have switched to selling mode get the vendor tab mapping.
-  const isVendorSelling = user?.role === 'vendor' && viewMode === 'selling';
 
-  // Map path to tab ID for BottomNav
+  const isVendorSelling = user?.role === 'vendor' && viewMode === 'selling';
+  const hideShell = ['/auth'].includes(location.pathname);
+
   const getActiveTab = () => {
     const path = location.pathname;
     if (isVendorSelling) {
@@ -94,30 +80,23 @@ function Layout() {
   };
 
   const handleTabChange = (tabId: string) => {
-    switch (tabId) {
-      case 'home':         navigate('/'); break;
-      case 'search':       navigate('/search'); break;
-      case 'cart':         navigate('/cart'); break;
-      case 'dashboard':    navigate('/vendor-dashboard'); break;
-      case 'add-product':  navigate('/add-product'); break;
-      case 'orders':       navigate('/orders'); break;
-      case 'profile':      navigate('/profile'); break;
-      default: break;
-    }
+    const routes: Record<string, string> = {
+      home: '/', search: '/search', cart: '/cart',
+      dashboard: '/vendor-dashboard', 'add-product': '/add-product',
+      orders: '/orders', profile: '/profile',
+    };
+    if (routes[tabId]) navigate(routes[tabId]);
   };
+
+  const isVendorDashboard = location.pathname.startsWith('/vendor-dashboard');
 
   return (
     <>
       {!hideShell && <Header title={isVendorSelling ? 'VENDOR HUB' : 'VENDORA'} />}
-      <main className={`main-content ${hideShell ? 'no-padding' : ''}`}>
+      <main className={`main-content ${hideShell ? 'no-padding' : ''} ${isVendorDashboard ? 'vendor-full-bleed' : ''}`}>
         <Outlet />
       </main>
-      {!hideShell && (
-        <BottomNav 
-          activeTab={getActiveTab()} 
-          onTabChange={handleTabChange} 
-        />
-      )}
+      {!hideShell && <BottomNav activeTab={getActiveTab()} onTabChange={handleTabChange} />}
     </>
   );
 }

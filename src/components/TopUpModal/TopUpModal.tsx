@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useShop } from '../../context/ShopContext';
 import { usePaystackPayment } from 'react-paystack';
+import { useFeedback } from '../../context/FeedbackContext';
 import Modal from '../Modal/Modal';
 import Button from '../Button/Button';
 import { Wallet, CreditCard, ChevronRight, CheckCircle2 } from 'lucide-react';
@@ -15,6 +16,7 @@ const PRESET_AMOUNTS = [500, 1000, 2000, 5000, 10000, 20000];
 
 export default function TopUpModal({ isOpen, onClose }: TopUpModalProps) {
   const { user, topUpWallet } = useShop();
+  const { showFeedback } = useFeedback();
   const [amount, setAmount] = useState<string>('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [transactionRef, setTransactionRef] = useState('');
@@ -47,7 +49,11 @@ export default function TopUpModal({ isOpen, onClose }: TopUpModalProps) {
   const handleTopUp = () => {
     const numAmount = parseInt(amount);
     if (!numAmount || numAmount < 100) {
-      alert('Minimum top up is ₦100');
+      showFeedback({
+        type: 'warning',
+        title: 'Amount Too Low',
+        message: 'Minimum wallet top up is ₦100.',
+      });
       return;
     }
     // @ts-ignore

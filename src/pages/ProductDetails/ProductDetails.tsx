@@ -35,10 +35,6 @@ export default function ProductDetails() {
   
   const handleAddToCart = () => {
     addToCart(product);
-    // Visual feedback could be added here
-    setTimeout(() => {
-      navigate(-1);
-    }, 300);
   };
   
   const maxStock = product.stock || 99;

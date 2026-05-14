@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShop } from '../../context/ShopContext';
 import { useAuth } from '../../context/AuthContext';
+import { useFeedback } from '../../context/FeedbackContext';
 import { supabase } from '../../lib/supabase';
 import {
   ShoppingBag,
@@ -9,7 +10,7 @@ import {
   LogOut,
   CreditCard,
   MessageSquare,
-  Star,
+
   ChevronRight,
   PlusCircle,
   Trash2,
@@ -22,13 +23,13 @@ import './Profile.css';
 
 export default function Profile() {
   const { signOut, user, isLoading: isAuthLoading, viewMode, toggleViewMode } = useAuth();
+  const { showFeedback, showConfirm } = useFeedback();
   const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -58,8 +59,18 @@ export default function Profile() {
       if (error) throw error;
       // No need to call updateUserName — onAuthStateChange will update the user
       setIsEditing(false);
+      showFeedback({
+        type: 'success',
+        title: 'Profile Updated',
+        message: 'Your display name has been saved.',
+      });
     } catch (err: any) {
       setUpdateError(err.message || 'Update failed. Try again.');
+      showFeedback({
+        type: 'error',
+        title: 'Update Failed',
+        message: err.message || 'Your profile could not be updated. Try again.',
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -74,11 +85,33 @@ export default function Profile() {
       const { error } = await supabase.auth.resetPasswordForEmail(user.email);
       if (error) throw error;
       setPasswordMsg({ type: 'success', text: `Reset link sent to ${user.email}` });
+      showFeedback({
+        type: 'success',
+        title: 'Reset Link Sent',
+        message: `A password reset link has been sent to ${user.email}.`,
+      });
     } catch (err: any) {
       setPasswordMsg({ type: 'error', text: err.message || 'Could not send reset email.' });
+      showFeedback({
+        type: 'error',
+        title: 'Could Not Send Link',
+        message: err.message || 'Could not send reset email.',
+      });
     } finally {
       setIsSendingReset(false);
     }
+  };
+
+  const handleDeleteRequest = async () => {
+    const shouldDelete = await showConfirm({
+      type: 'warning',
+      title: 'Delete Account?',
+      message: 'This permanently removes your account. This cannot be undone.',
+      confirmText: 'Delete Account',
+      cancelText: 'Cancel',
+      destructive: true,
+    });
+    if (shouldDelete) handleDeleteAccount();
   };
 
   const handleDeleteAccount = async () => {
@@ -92,6 +125,11 @@ export default function Profile() {
     } catch (err: any) {
       console.error('Delete error:', err);
       setDeleteError('Could not delete account. Please run the SQL setup in your Supabase dashboard first, or contact support.');
+      showFeedback({
+        type: 'error',
+        title: 'Delete Failed',
+        message: 'Could not delete account. Please run the SQL setup in your Supabase dashboard first, or contact support.',
+      });
       setIsDeleting(false);
     }
   };
@@ -172,7 +210,7 @@ export default function Profile() {
             <span className="label">BALANCE</span>
             <h3 className="amount">₦{(user.walletBalance || 0).toLocaleString()}</h3>
           </div>
-          <button className="topup-pill">
+          <button className="topup-pill" onClick={() => navigate('/payment-settings')}>
             <PlusCircle size={18} /> Top Up
           </button>
         </div>
@@ -233,9 +271,6 @@ export default function Profile() {
           <div className="option-item" onClick={() => navigate('/inbox')}>
             <MessageSquare size={20} /> <span>Messages</span> <ChevronRight size={18} />
           </div>
-          <div className="option-item">
-            <Star size={20} /> <span>Reviews</span> <ChevronRight size={18} />
-          </div>
         </div>
 
         {/* Security */}
@@ -262,31 +297,19 @@ export default function Profile() {
         {/* Danger Zone */}
         <div className="option-group">
           <h4 className="group-label danger-label">Danger Zone</h4>
-          {showDeleteConfirm ? (
-            <div className="delete-confirm-inline">
-              <p>Permanently delete your account? This cannot be undone.</p>
-              {deleteError && (
-                <p className="field-error" style={{ marginBottom: '0.75rem' }}>{deleteError}</p>
-              )}
-              <div className="confirm-btns">
-                <button className="confirm-del" onClick={handleDeleteAccount} disabled={isDeleting}>
-                  {isDeleting ? 'Deleting...' : 'Yes, Delete'}
-                </button>
-                <button className="cancel-del" onClick={() => { setShowDeleteConfirm(false); setDeleteError(''); }}>Cancel</button>
-              </div>
-            </div>
-          ) : (
-            <div className="option-item delete" onClick={() => setShowDeleteConfirm(true)}>
-              <Trash2 size={20} /> <span>Delete Account</span> <ChevronRight size={18} />
-            </div>
+          {deleteError && (
+            <p className="field-error" style={{ marginBottom: '0.75rem' }}>{deleteError}</p>
           )}
+          <div className="option-item delete" onClick={handleDeleteRequest} style={{ cursor: isDeleting ? 'wait' : 'pointer', opacity: isDeleting ? 0.7 : 1 }}>
+            <Trash2 size={20} /> <span>{isDeleting ? 'Deleting...' : 'Delete Account'}</span> <ChevronRight size={18} />
+          </div>
         </div>
 
         {/* Logout */}
         <button className="logout-btn-full-simple" onClick={handleLogout}>
           <LogOut size={20} /> Secure Logout
         </button>
-        <p className="session-note">You'll be automatically signed out after 3 hours of inactivity.</p>
+        <p className="session-note">Your session stays signed in securely until you log out or Supabase expires it.</p>
       </div>
     </div>
   );
